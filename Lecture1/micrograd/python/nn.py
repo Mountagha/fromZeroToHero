@@ -27,7 +27,18 @@ class Neuron(Module):
         return f"{'ReLU' if self.nonlin else 'Linear'}Neuron({len(self.w)})"
 
 class Layer(Module):
-    pass
+    def __init__(self, nin, nout **kwargs) -> None:
+        self.neurons = [Neuron(nin, **kwargs) for _ in range(nout)]
+
+    def __call__(self, x): 
+        out = [n(x) for n in self.neurons]
+        return out[0] if len(out) == 1 else out
+    
+    def parameters(self):
+        return [p for  n in self.neurons for p in n.parameters()]
+    
+    def __repr__(self) -> str:
+        return f"Layer of [{', '.join(str(n) for n in self.neurons)}]"
 
 class MLP(Module):
     pass
