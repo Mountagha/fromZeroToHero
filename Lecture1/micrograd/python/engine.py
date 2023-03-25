@@ -84,7 +84,7 @@ class Value:
     def __neg__(self): # -self
         return self * -1
 
-    def __radd(self, other): # other + self
+    def __radd__(self, other): # other + self
         return self + other
     
     def __sub__(self, other): # other - self
