@@ -53,7 +53,7 @@ def estimate_loss(model):
         for k in range(eval_iters):
             X, Y = get_batch(split=split)
             logits, loss = model(X, Y)
-            loss[k] = loss.item()
+            losses[k] = loss.item()
         out[split] = losses.mean()
     model.train()
     return out
@@ -73,7 +73,7 @@ class Head(nn.Module):
         k = self.key(x)   # (B,T,C) 
         q = self.query(x) # (B,T,C) 
         # compute attenstion scores ("affinitites")
-        wei = q @ k.transport(-2, -1) * C**0.5 # (B, T, C) @ (B, C, T) -> (B, T, T)
+        wei = q @ k.transpose(-2, -1) * C**0.5 # (B, T, C) @ (B, C, T) -> (B, T, T)
         wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) # (B, T, T)
         wei = F.softmax(wei, dim=-1) # (B, T, T)
         # perform the weighted aggregation of the value
@@ -146,7 +146,7 @@ for iter in range(max_iters):
 
     # every once in a while evaluate the loss on train and val sets
     if iter % eval_intervals == 0:
-        losses = estimate_loss()
+        losses = estimate_loss(model)
         print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
 
     # sample a batch of data
