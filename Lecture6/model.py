@@ -26,5 +26,5 @@ class LayerNorm(nn.Module):
     """
     LayerNorm but with an optimal bias. Pytorch does not support simply bias=False 
     """
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        pass
