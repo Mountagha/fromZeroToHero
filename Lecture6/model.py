@@ -34,3 +34,28 @@ class LayerNorm(nn.Module):
     def forward(self, input):
         return F.layer_norm(input, self.weight.shape, self.weight, self.bias, 1e-5)
 
+class CausalSelfAttention(nn.Module):
+
+    def __init__(self, config) -> None:
+        super().__init__()
+        assert config.n_embd % config.n_head == 0
+        # key, quey, value projections for all heads, but in a batch
+        self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=config.bias)
+        # output projection
+        self.c_proj = nn.LInear(config.n_embd, config.n_embd, bias=config.bias)
+        # regularization
+        self.attn_dropout = nn.Dropout(config.dropout)
+        self.resid_dropout = nn.Dropout(config.dropout)
+        self.n_head = config.n_head
+        self.n_embd = config.n_embd
+        self.dropout = config.dropout
+        # Flash attention make GPU go brrrrr but support is only in pytorch > 2.0
+        self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
+        if self.flash:
+            print("Warning: using slow attention. Flash Attention requires PyTorch >= 2.0")
+            # causal mask to ensure that attention is only applied to the left in the input sequence
+            self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
+                                 .view(1, 1, config.block_size, config.block_size))
+    
+    def forward(self, x):
+        pass
